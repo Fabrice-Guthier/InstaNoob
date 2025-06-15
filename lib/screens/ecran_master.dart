@@ -13,13 +13,11 @@ class EcranMaster extends StatefulWidget {
 }
 
 class _EcranMasterState extends State<EcranMaster> {
-  // On prépare la variable qui contiendra notre future liste de photos
   late Future<List<Photo>> _futurePhotos;
 
   @override
   void initState() {
     super.initState();
-    // On lance la récupération des données une seule fois
     _futurePhotos = ApiService().recupererPhotos();
   }
 
@@ -57,7 +55,6 @@ class _EcranMasterState extends State<EcranMaster> {
           ),
         ],
       ),
-      // Le FutureBuilder est parfait pour gérer les états de chargement/erreur/succès
       body: FutureBuilder<List<Photo>>(
         future: _futurePhotos,
         builder: (context, snapshot) {
@@ -74,7 +71,6 @@ class _EcranMasterState extends State<EcranMaster> {
           }
 
           final photos = snapshot.data!;
-          // Consumer n'reconstruit que cette partie du widget quand l'état change
           return appState.isGridView
               ? GrillePhotos(photos: photos)
               : ListePhotos(photos: photos);
@@ -121,7 +117,6 @@ class GrillePhotos extends StatelessWidget {
   }
 }
 
-// Widget pour une seule carte photo, réutilisé dans la liste et la grille
 class CartePhoto extends StatelessWidget {
   final Photo photo;
   const CartePhoto({super.key, required this.photo});
@@ -130,7 +125,7 @@ class CartePhoto extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        // Navigation vers l'écran de détails en passant la photo en argument
+        // Navigation vers l'écran de détails en passant la photo
         Navigator.pushNamed(context, '/details', arguments: photo);
       },
       child: Card(
@@ -139,11 +134,10 @@ class CartePhoto extends StatelessWidget {
         elevation: 3,
         child: Column(
           children: [
-            // Utilisation de CachedNetworkImage pour la mise en cache
+            // Utilisation de la mise en cache
             CachedNetworkImage(
               imageUrl: photo.url,
               fit: BoxFit.cover,
-              // Le design "pas ouf" par excellence: un spinner pendant le chargement
               placeholder: (context, url) => Container(
                 height: 150,
                 color: Colors.grey[300],
@@ -164,7 +158,6 @@ class CartePhoto extends StatelessWidget {
                   Expanded(
                     child: Text(photo.auteur, overflow: TextOverflow.ellipsis),
                   ),
-                  // Consumer pour ne reconstruire que le bouton quand on like
                   Consumer<AppState>(
                     builder: (context, appState, child) {
                       return IconButton(

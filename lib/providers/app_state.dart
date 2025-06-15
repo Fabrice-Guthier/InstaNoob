@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:likeit/models/photo.dart';
 
 class AppState extends ChangeNotifier {
-  // Stockage des favoris en RAM (persistance temporaire)
+  // Stockage des favoris en RAM
   final List<Photo> _photosFavorites = [];
   List<Photo> get photosFavorites => _photosFavorites;
 
@@ -14,7 +14,7 @@ class AppState extends ChangeNotifier {
   bool _isGridView = false;
   bool get isGridView => _isGridView;
 
-  // Méthodes pour modifier l'état et notifier les listeners (les widgets qui écoutent)
+  // Méthodes pour modifier l'état et notifier les listeners
   void toggleTheme() {
     _themeMode = _themeMode == ThemeMode.light
         ? ThemeMode.dark

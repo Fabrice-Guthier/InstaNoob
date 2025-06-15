@@ -18,7 +18,7 @@ class EcranFavoris extends StatelessWidget {
               child: Text('Aucune photo en favori pour le moment.'),
             );
           }
-          // On réutilise le widget de la liste, c'est efficace !
+          // On réutilise le widget de la liste
           return ListePhotos(photos: appState.photosFavorites);
         },
       ),
