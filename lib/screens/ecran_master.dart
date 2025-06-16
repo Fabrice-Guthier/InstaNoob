@@ -167,7 +167,7 @@ class CartePhoto extends StatelessWidget {
         margin: const EdgeInsets.all(8.0),
         child: Stack(
           // On s'assure que le Stack remplit bien toute la carte.
-          fit: StackFit.expand, 
+          fit: StackFit.expand,
           children: [
             // --- COUCHE N°1 (LE FOND) : L'IMAGE ---
             // L'image ne change pas, mais elle est maintenant la base de notre superposition.
@@ -202,7 +202,7 @@ class CartePhoto extends StatelessWidget {
                       // pour qu'elle soit visible sur n'importe quelle photo !
                       color: estFavori ? Colors.redAccent : Colors.white,
                       shadows: const [
-                        Shadow(color: Colors.black87, blurRadius: 6.0)
+                        Shadow(color: Colors.black87, blurRadius: 6.0),
                       ],
                     ),
                     onPressed: () => appState.toggleFavori(photo),
@@ -211,7 +211,7 @@ class CartePhoto extends StatelessWidget {
               ),
             ),
           ],
-        )
+        ),
       ),
     );
   }

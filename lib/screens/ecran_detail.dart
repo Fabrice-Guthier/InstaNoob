@@ -26,52 +26,75 @@ class EcranDetail extends StatelessWidget {
         // On permet à l'utilisateur de revenir en arrière en tapotant n'importe où sur l'écran.
         // C'est comme un bouton "Retour" invisible, mais qui fonctionne partout.
       },
-      child: Stack(
-        // On s'assure que le Stack remplit bien toute la carte.
-        fit: StackFit.expand,
-        children: [
-          // --- COUCHE N°1 (LE FOND) : L'IMAGE ---
-          // L'image ne change pas, mais elle est maintenant la base de notre superposition.
-          Hero(
-            tag: photo.id, // Tag unique pour l'animation de transition
-            child: CachedNetworkImage(
-              imageUrl: photo.url,
-              fit: BoxFit.cover,
-              placeholder: (context, url) => Container(
-                color: Colors.grey[300],
-                child: const Center(child: CircularProgressIndicator()),
-              ),
-              errorWidget: (context, url, error) => Container(
-                color: Colors.red[100],
-                child: const Icon(Icons.broken_image),
+      child: Scaffold(
+        body: Stack(
+          fit: StackFit.expand,
+          children: [
+            Hero(
+              tag: photo.id,
+              child: CachedNetworkImage(
+                imageUrl: photo.url,
+                fit: BoxFit.cover,
+                placeholder: (context, url) => Container(
+                  color: Colors.grey[300],
+                  child: const Center(child: CircularProgressIndicator()),
+                ),
+                errorWidget: (context, url, error) => Container(
+                  color: Colors.red[100],
+                  child: const Icon(Icons.broken_image),
+                ),
               ),
             ),
-          ),
-
-          // --- COUCHE N°2 (PAR-DESSUS) : LE BOUTON LIKE ---
-          Align(
-            alignment: Alignment.bottomRight, // On le cale en bas à droite.
-            child: Consumer<AppState>(
-              builder: (context, appState, child) {
-                final estFavori = appState.estFavori(photo);
-                return IconButton(
-                  // On peut augmenter un peu la taille pour une meilleure visibilité.
-                  iconSize: 32,
-                  icon: Icon(
-                    estFavori ? Icons.favorite : Icons.favorite_border,
-                    // ASTUCE : On met l'icône en blanc avec une ombre
-                    // pour qu'elle soit visible sur n'importe quelle photo !
-                    color: estFavori ? Colors.redAccent : Colors.white,
-                    shadows: const [
-                      Shadow(color: Colors.black87, blurRadius: 6.0),
-                    ],
-                  ),
-                  onPressed: () => appState.toggleFavori(photo),
-                );
-              },
+            Positioned(
+              bottom: 70, // Ajuste cette valeur pour éviter de chevaucher le bouton favori
+              left: 16,
+              right: 16,
+              child: Container(
+                padding: const EdgeInsets.all(12.0),
+                decoration: BoxDecoration(
+                  color: Colors.black54,
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      photo.auteur,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ),
-        ],
+            Align(
+              alignment: Alignment.bottomRight,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Consumer<AppState>(
+                  builder: (context, appState, child) {
+                    final estFavori = appState.estFavori(photo);
+                    return IconButton(
+                      iconSize: 32,
+                      icon: Icon(
+                        estFavori ? Icons.favorite : Icons.favorite_border,
+                        color: estFavori ? Colors.redAccent : Colors.white,
+                        shadows: const [
+                          Shadow(color: Colors.black87, blurRadius: 6.0),
+                        ],
+                      ),
+                      onPressed: () => appState.toggleFavori(photo),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
