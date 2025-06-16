@@ -23,34 +23,31 @@ class MonApp extends StatelessWidget {
         // 'MaterialApp' est le widget qui configure tout le style global de l'app,
         // la navigation, les thèmes, etc. C'est le moteur de rendu principal.
         return MaterialApp(
-          title: 'Insta-NooB', // Le nom de l'app pour l'OS.
-
+          title: 'InstaNooB', // Le nom de l'app pour l'OS.
           // Configuration du thème clair.
-          theme: ThemeData.light(
-            useMaterial3: true,
-          ),
+          theme: ThemeData.light(useMaterial3: true),
           // Configuration du thème sombre.
-          darkTheme: ThemeData.dark(
-            useMaterial3: true,
-          ),
+          darkTheme: ThemeData.dark(useMaterial3: true),
           // LA LIGNE MAGIQUE : Le thème utilisé (light, dark, ou système)
           // est directement lu depuis notre 'appState'. Si on change cette valeur
           // dans l'état, l'app entière changera de thème instantanément.
           themeMode: appState.themeMode,
-          
+
           // On cache la bannière "Debug" en haut à droite.
           debugShowCheckedModeBanner: false,
 
           // Définition du système de navigation de l'app.
           // En ASP.NET Core, ce serait l'équivalent de ton `app.UseRouting()` et `app.MapControllerRoute()`.
-
           initialRoute: '/', // La route de départ, notre "spawn point".
           routes: {
             // On définit toutes les "destinations" possibles (les écrans).
             // C'est notre système de portails de téléportation.
-            '/': (context) => const EcranMaster(),      // L'URL "/" mène à l'écran principal.
-            '/details': (context) => const EcranDetail(), // L'URL "/details" mène à l'écran de détail.
-            '/favoris': (context) => const EcranFavoris(), // L'URL "/favoris" mène à l'écran des favoris.
+            '/': (context) =>
+                const EcranMaster(), // L'URL "/" mène à l'écran principal.
+            '/details': (context) =>
+                const EcranDetail(), // L'URL "/details" mène à l'écran de détail.
+            '/favoris': (context) =>
+                const EcranFavoris(), // L'URL "/favoris" mène à l'écran des favoris.
           },
         );
       },

@@ -37,7 +37,7 @@ class Photo {
   }
 }
 
-// Cette classe est le schéma directeur d'une "Photo" dans ton application. Elle définit précisément de quelles informations une photo est composée.
+// Cette classe est le schéma directeur d'une "Photo" dans l'application. Elle définit précisément de quelles informations une photo est composée.
 
 // La Carte d'Identité (Propriétés final)
 // En déclarant les propriétés avec final, on crée un objet immuable. Une fois qu'une photo est créée avec son ID, son auteur, etc., ces informations ne peuvent plus changer. C'est comme graver des stats sur une carte de collection. Si quelque chose doit changer, on crée une nouvelle carte. Cette pratique rend le code beaucoup plus sûr, car on sait qu'un objet Photo ne sera pas modifié accidentellement ailleurs dans le code.

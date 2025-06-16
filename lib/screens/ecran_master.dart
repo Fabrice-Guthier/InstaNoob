@@ -40,22 +40,27 @@ class _EcranMasterState extends State<EcranMaster> {
     // `Scaffold` est la structure de base d'un écran Material Design.
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Insta-Débutant'),
-        actions: [ // La liste des boutons à droite dans la barre de titre.
+        title: const Text('InstaNooB'),
+        actions: [
+          // La liste des boutons à droite dans la barre de titre.
           // Bouton pour changer le thème
           IconButton(
             // On choisit l'icône en fonction du thème actuel, lu depuis l'état global.
-            icon: Icon(appState.themeMode == ThemeMode.light
-                ? Icons.dark_mode_outlined
-                : Icons.light_mode_outlined),
+            icon: Icon(
+              appState.themeMode == ThemeMode.light
+                  ? Icons.dark_mode_outlined
+                  : Icons.light_mode_outlined,
+            ),
             // Au clic, on appelle la méthode de l'état global pour changer le thème.
             onPressed: () => appState.toggleTheme(),
           ),
           // Bouton pour changer la vue (liste ou grille)
           IconButton(
-            icon: Icon(appState.isGridView
-                ? Icons.view_list_outlined
-                : Icons.grid_view_outlined),
+            icon: Icon(
+              appState.isGridView
+                  ? Icons.view_list_outlined
+                  : Icons.grid_view_outlined,
+            ),
             onPressed: () => appState.toggleView(),
           ),
           // Bouton pour naviguer vers l'écran des favoris
@@ -70,6 +75,11 @@ class _EcranMasterState extends State<EcranMaster> {
       body: FutureBuilder<List<Photo>>(
         // Le `FutureBuilder` est un widget incroyable qui gère pour nous les états d'une opération asynchrone.
         future: _futurePhotos, // On lui donne la quête à surveiller.
+        //----------------------------------------------------------------------------------------
+        //builder: (context, snapshot): C'est le cœur de la logique. Le builder est une fonction qui sera appelée par Flutter à chaque fois que l'état de la quête (_futurePhotos) change. Elle prend deux arguments :
+        // context: Le contexte de l'arbre des widgets, un grand classique en Flutter.
+        // snapshot: C'est la star du spectacle ! À chaque fois que le builder est appelé, ce snapshot est un nouvel objet AsyncSnapshot qui contient une photo à l'instant T de l'avancement de ta quête _futurePhotos.
+        //----------------------------------------------------------------------------------------
         builder: (context, snapshot) {
           // Cas 1 : La quête est en cours...
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -78,7 +88,9 @@ class _EcranMasterState extends State<EcranMaster> {
           }
           // Cas 2 : La quête a échoué !
           if (snapshot.hasError) {
-            return Center(child: Text('Une erreur est survenue: ${snapshot.error}'));
+            return Center(
+              child: Text('Une erreur est survenue: ${snapshot.error}'),
+            );
           }
           // Cas 3 : La quête est terminée, mais n'a ramené aucun trésor.
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
@@ -109,7 +121,14 @@ class ListePhotos extends StatelessWidget {
     // `ListView.builder` est optimisé : il ne crée que les éléments visibles à l'écran.
     return ListView.builder(
       itemCount: photos.length,
-      itemBuilder: (context, index) => CartePhoto(photo: photos[index]),
+      // On modifie juste cette ligne :
+      itemBuilder: (context, index) {
+        // On met la carte dans une boîte avec une hauteur fixe
+        return SizedBox(
+          height: 500, // Joue avec cette valeur pour trouver la taille idéale !
+          child: CartePhoto(photo: photos[index]),
+        );
+      },
     );
   }
 }
@@ -143,84 +162,88 @@ class CartePhoto extends StatelessWidget {
     return GestureDetector(
       onTap: () => Navigator.pushNamed(context, '/details', arguments: photo),
       child: Card(
-        clipBehavior: Clip.antiAlias, // Pour que l'image respecte les coins arrondis
+        clipBehavior:
+            Clip.antiAlias, // Pour que l'image respecte les coins arrondis
         margin: const EdgeInsets.all(8.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+        child: Stack(
+          // On s'assure que le Stack remplit bien toute la carte.
+          fit: StackFit.expand, 
           children: [
-            // Ce widget est un dieu : il télécharge l'image, l'affiche, ET la met en cache.
-            // La prochaine fois, l'image se chargera instantanément depuis le disque.
+            // --- COUCHE N°1 (LE FOND) : L'IMAGE ---
+            // L'image ne change pas, mais elle est maintenant la base de notre superposition.
             Hero(
               tag: photo.id, // Tag unique pour l'animation de transition
               child: CachedNetworkImage(
                 imageUrl: photo.url,
                 fit: BoxFit.cover,
-                // Ce qu'on affiche PENDANT le chargement.
                 placeholder: (context, url) => Container(
-                    height: 150,
-                    color: Colors.grey[300],
-                    child: const Center(child: CircularProgressIndicator())),
-                // Ce qu'on affiche SI le chargement échoue.
+                  color: Colors.grey[300],
+                  child: const Center(child: CircularProgressIndicator()),
+                ),
                 errorWidget: (context, url, error) => Container(
-                    height: 150,
-                    color: Colors.red[100],
-                    child: const Icon(Icons.broken_image)),
+                  color: Colors.red[100],
+                  child: const Icon(Icons.broken_image),
+                ),
               ),
             ),
-            // La barre d'infos sous l'image
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(child: Text(photo.auteur, overflow: TextOverflow.ellipsis)),
-                  // -- LE BOUTON LIKE "INTELLIGENT" --
-                  // On utilise un Consumer ici. C'est une optimisation CLÉ.
-                  // Seul ce bouton sera reconstruit quand l'état des favoris change,
-                  // pas toute la carte, ni toute la liste. C'est ultra performant.
-                  Consumer<AppState>(
-                    builder: (context, appState, child) {
-                      final estFavori = appState.estFavori(photo);
-                      return IconButton(
-                        icon: Icon(
-                          estFavori ? Icons.favorite : Icons.favorite_border,
-                          color: estFavori ? Colors.red : null,
-                        ),
-                        onPressed: () => appState.toggleFavori(photo),
-                      );
-                    },
-                  ),
-                ],
+
+            // --- COUCHE N°2 (PAR-DESSUS) : LE BOUTON LIKE ---
+            Align(
+              alignment: Alignment.bottomRight, // On le cale en bas à droite.
+              child: Consumer<AppState>(
+                builder: (context, appState, child) {
+                  final estFavori = appState.estFavori(photo);
+                  return IconButton(
+                    // On peut augmenter un peu la taille pour une meilleure visibilité.
+                    iconSize: 32,
+                    icon: Icon(
+                      estFavori ? Icons.favorite : Icons.favorite_border,
+                      // ASTUCE : On met l'icône en blanc avec une ombre
+                      // pour qu'elle soit visible sur n'importe quelle photo !
+                      color: estFavori ? Colors.redAccent : Colors.white,
+                      shadows: const [
+                        Shadow(color: Colors.black87, blurRadius: 6.0)
+                      ],
+                    ),
+                    onPressed: () => appState.toggleFavori(photo),
+                  );
+                },
               ),
             ),
           ],
-        ),
+        )
       ),
     );
   }
 }
 
+// Ce que fait ce fichier, en résumé
+// Pense à ce fichier comme au niveau principal de ton jeu. Il gère tout ce qui se passe sur l'écran d'accueil.
 
-// Ce fichier définit tout ce qui se passe sur l'écran d'accueil de l'application. C'est la pièce maîtresse qui assemble tous les autres éléments qu'on a vus.
+// Son rôle est celui d'un chef d'orchestre intelligent :
 
-// Le Cycle de Vie de l'Écran (initState)
-// Dès que l'écran apparaît, il lance immédiatement la "quête" pour récupérer les photos (ApiService.recupererPhotos()). Il ne reste pas les bras croisés à attendre le joueur.
+// Il lance la quête (dès le début) : Au lancement de l'écran, il envoie immédiatement un messager (ApiService) chercher les photos sur internet. Il n'attend pas.
 
-// L'Affichage Intelligent (FutureBuilder)
-// C'est le "journal de quêtes" de l'interface. Il surveille la quête lancée dans initState et met à jour l'affichage en temps réel :
+// Il gère l'attente (le journal de quêtes) : Pendant que le messager est parti, il affiche un écran de chargement (FutureBuilder).
 
-// "Quête en cours..." → Il affiche une roue de chargement.
-// "Échec de la quête !" → Il affiche un message d'erreur.
-// "Quête réussie !" → Il affiche enfin les photos.
-// Le Centre de Commandement (AppBar et Provider)
-// La barre en haut de l'écran n'est pas juste décorative. C'est un tableau de bord. Les boutons (changer de thème, changer de vue) ne font pas le travail eux-mêmes ; ils envoient des ordres à l'état global (appState). L'état global se met à jour, et l'interface qui en dépend (comme l'icône du bouton ou le corps de la page) se met à jour automatiquement.
+// Si le messager revient avec les photos, super ! Il les affiche.
 
-// L'Arsenal d'Affichage (ListePhotos & GrillePhotos)
-// Au lieu de mettre un énorme bloc de code dans EcranMaster, on a créé des "plans de construction" (ListePhotos et GrillePhotos). L'écran principal choisit simplement quel plan utiliser en fonction des ordres du appState. C'est propre et réutilisable.
+// Si le messager tombe dans un piège (erreur réseau), il affiche un message d'erreur.
 
-// La Carte d'Identité (CartePhoto)
-// C'est la brique de base. Elle est super optimisée :
+// C'est robuste, il pense à tous les scénarios.
 
-// Mise en Cache (CachedNetworkImage) : Elle télécharge les images une seule fois. C'est comme garder une carte des zones déjà explorées pour ne pas avoir à redécouvrir le chemin. C'est rapide et ça économise la data.
-// Like Chirurgical (Consumer) : Quand tu cliques sur "like", seule la petite icône du cœur se redessine. Pas la carte, pas la liste, juste le cœur. C'est une optimisation de performance majeure pour que l'app reste fluide même avec des centaines de photos.
-// En résumé, EcranMaster est un chef d'orchestre intelligent. Il délègue la récupération des données, gère proprement tous les états de chargement, affiche les données de manière flexible et réagit aux actions de l'utilisateur de la manière la plus performante possible.
+// Il écoute les ordres du joueur (le tableau de bord) : La barre de titre (AppBar) contient des boutons. Quand tu cliques dessus (changer la vue, le thème...), l'écran ne change pas directement. Il envoie un ordre à un "manager central" (AppState), et c'est ce manager qui dit à l'écran comment se redessiner. C'est propre et organisé.
+
+// Il utilise des plans de construction réutilisables :
+
+// ListePhotos et GrillePhotos : Au lieu de coder l'affichage en liste et en grille directement dans l'écran principal, il utilise des "plans" séparés. C'est plus facile à maintenir.
+
+// CartePhoto : C'est la brique de base, la carte individuelle pour une seule photo. Elle est super optimisée :
+
+// Elle superpose le bouton ❤️ sur l'image (Stack).
+
+// Elle met les images en cache pour que l'app soit rapide (CachedNetworkImage).
+
+// Elle a une animation de transition fluide (Hero).
+
+// En bref, ce fichier est le cerveau de ton écran d'accueil. Il est proactif, gère les imprévus et délègue le travail à des composants spécialisés pour que tout reste propre, performant et facile à modifier.
