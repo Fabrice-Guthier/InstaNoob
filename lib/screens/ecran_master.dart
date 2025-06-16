@@ -201,7 +201,7 @@ class CartePhoto extends StatelessWidget {
 }
 
 
-// Ce fichier définit tout ce qui se passe sur l'écran d'accueil de ton application. C'est la pièce maîtresse qui assemble tous les autres éléments qu'on a vus.
+// Ce fichier définit tout ce qui se passe sur l'écran d'accueil de l'application. C'est la pièce maîtresse qui assemble tous les autres éléments qu'on a vus.
 
 // Le Cycle de Vie de l'Écran (initState)
 // Dès que l'écran apparaît, il lance immédiatement la "quête" pour récupérer les photos (ApiService.recupererPhotos()). Il ne reste pas les bras croisés à attendre le joueur.

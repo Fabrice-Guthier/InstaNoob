@@ -58,7 +58,7 @@ class MonApp extends StatelessWidget {
   }
 }
 
-// Ce fichier, MonApp.dart, est le chef d'orchestre de l'interface de ton application. Il ne fait pas grand-chose lui-même, mais il dit à tout le monde comment se comporter.
+// Ce fichier, MonApp.dart, est le chef d'orchestre de l'interface de l'application. Il ne fait pas grand-chose lui-même, mais il dit à tout le monde comment se comporter.
 
 // Le Grand Œil (Consumer<AppState>)
 // Son rôle principal est de surveiller en permanence le "cerveau" de l'app (AppState). Dès que le cerveau envoie un signal (en appelant notifyListeners()), le Consumer se réveille et met à jour l'interface.

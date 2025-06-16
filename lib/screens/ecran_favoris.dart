@@ -40,7 +40,7 @@ class EcranFavoris extends StatelessWidget {
   }
 }
 
-// Cet écran est la "salle des trophées" de ton application. 
+// Cet écran est la "salle des trophées" de l'application. 
 //Il n'a qu'un seul rôle : afficher la liste des photos que l'utilisateur a marquées comme favorites.
 
 // Un Écran "Miroir" (StatelessWidget)
