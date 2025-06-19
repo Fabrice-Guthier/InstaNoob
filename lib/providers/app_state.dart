@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:likeit/models/photo.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // La classe AppState hérite de `ChangeNotifier`.
 // C'est ce qui lui donne le super-pouvoir `notifyListeners()`.
@@ -40,27 +41,38 @@ class AppState extends ChangeNotifier {
     notifyListeners(); // On notifie les widgets du changement.
   }
 
-  // Méthode pour VÉRIFIER si une photo est déjà en favori.
-  // C'est une méthode de "lecture" (query), elle ne modifie rien.
-  bool estFavori(Photo photo) {
-    // La méthode `any` est très efficace. Elle parcourt la liste et s'arrête dès qu'elle trouve un élément
-    // qui correspond à la condition. C'est le `Any()` de LINQ en C#.
-    return _photosFavorites.any((p) => p.id == photo.id);
+static const String _keyFavoris =
+      'favoris_photos_ids'; // Clé pour shared_preferences
+  Set<String> _favoris = {}; // Ensemble des IDs des photos favorites
+
+  Set<String> get favoris => _favoris;
+
+  AppState() {
+    _loadFavoris(); // Charge les favoris au démarrage
   }
 
-  // Méthode pour AJOUTER ou RETIRER une photo des favoris.
-  void toggleFavori(Photo photo) {
-    // On utilise la méthode précédente pour savoir quoi faire.
-    if (estFavori(photo)) {
-      // Si elle est déjà favorite, on la retire.
-      _photosFavorites.removeWhere((p) => p.id == photo.id);
+  // Charge les favoris depuis shared_preferences
+  Future<void> _loadFavoris() async {
+    final prefs = await SharedPreferences.getInstance();
+    _favoris = prefs.getStringList(_keyFavoris)?.toSet() ?? {};
+    notifyListeners(); // Informe les widgets de l'état initial
+  }
+
+  // Bascule l'état favori d'une photo
+  Future<void> toggleFavori(Photo photo) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (_favoris.contains(photo.id)) {
+      _favoris.remove(photo.id);
     } else {
-      // Sinon, on l'ajoute.
-      _photosFavorites.add(photo);
+      _favoris.add(photo.id);
     }
-    // Après chaque modification de la liste, on notifie les widgets !
-    // C'est ce qui met à jour le cœur sur la `CartePhoto` et la liste sur `EcranFavoris`.
-    notifyListeners();
+    await prefs.setStringList(_keyFavoris, _favoris.toList()); // Sauvegarde
+    notifyListeners(); // Informe les widgets du changement
+  }
+
+  // Vérifie si une photo est favorite
+  bool estFavori(Photo photo) {
+    return _favoris.contains(photo.id);
   }
 }
 

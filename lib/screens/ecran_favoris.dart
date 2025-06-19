@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:likeit/models/photo.dart';
 import 'package:likeit/providers/app_state.dart';
 // On importe EcranMaster UNIQUEMENT pour pouvoir réutiliser le widget 'ListePhotos' qui s'y trouve.
 // C'est une dépendance directe, ce qui montre à quel point les composants sont bien couplés.
 import 'package:likeit/screens/ecran_master.dart';
+import 'package:likeit/services/app_service.dart';
 import 'package:provider/provider.dart';
 
 // L'écran des favoris est un 'StatelessWidget'.
@@ -14,26 +16,38 @@ class EcranFavoris extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appState = context.watch<AppState>();
+    final favorisIds = appState.favoris;
+
     return Scaffold(
       appBar: AppBar(title: const Text('Mes Favoris')),
-      // Le corps de l'écran est un 'Consumer' qui surveille l'état de l'application.
-      // Il est directement branché sur le "cerveau" pour avoir la liste la plus à jour.
-      body: Consumer<AppState>(
-        // Le builder se redessine automatiquement si la liste des favoris dans AppState change.
-        builder: (context, appState, child) {
-          // Cas 1 : Le coffre à trésors est vide.
-          if (appState.photosFavorites.isEmpty) {
-            // On affiche un message informatif au centre de l'écran.
-            return const Center(
-              child: Text('Aucune photo en favori pour le moment.'),
-            );
+      body: FutureBuilder<List<Photo>>(
+        future: ApiService().recupererPhotos(), // Récupère toutes les photos
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
           }
-          // Cas 2 : On a des favoris à afficher.
-          // C'EST LA PARTIE LA PLUS IMPORTANTE : LA RÉUTILISATION !
-          // On ne réécrit pas le code pour afficher une liste. On réutilise le widget
-          // 'ListePhotos' qu'on a déjà créé pour l'écran principal.
-          // La seule différence est la source des données : ici, c'est `appState.photosFavorites`.
-          return ListePhotos(photos: appState.photosFavorites);
+          if (snapshot.hasError) {
+            return Center(child: Text('Erreur: ${snapshot.error}'));
+          }
+          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(child: Text('Aucune photo à afficher.'));
+          }
+
+          // Filtre les photos pour ne garder que les favoris
+          final favorisPhotos = snapshot.data!
+              .where((photo) => favorisIds.contains(photo.id))
+              .toList();
+
+          if (favorisPhotos.isEmpty) {
+            return const Center(child: Text('Aucun favori pour le moment.'));
+          }
+
+          return ListView.builder(
+            itemCount: favorisPhotos.length,
+            itemBuilder: (context, index) =>
+                CartePhoto(photo: favorisPhotos[index]),
+          );
         },
       ),
     );

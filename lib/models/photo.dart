@@ -1,16 +1,12 @@
 // La déclaration de la classe. C'est le plan de construction, le "blueprint" d'une photo.
 // En C#, ce serait une simple classe POCO (Plain Old CLR Object).
 class Photo {
-  // Les propriétés de la classe. Le mot-clé `final` est très important :
-  // il signifie que lorsque l'objet Photo est créé, ces valeurs ne pourront JAMAIS être modifiées.
-  // C'est un objet immuable, ce qui rend l'état de l'application beaucoup plus prévisible et sûr.
   final String id;
-  final String auteur;
-  final String url;
-  final String description;
+  final String auteur; // Unsplash utilise 'user.name'
+  final String url; // Unsplash a plusieurs tailles, on prendra 'urls.regular'
+  final String
+  description; // Unsplash utilise 'description' ou 'alt_description'
 
-  // Le constructeur de la classe.
-  // Le mot-clé `required` garantit qu'on ne peut pas créer une Photo sans fournir toutes ces informations.
   Photo({
     required this.id,
     required this.auteur,
@@ -18,21 +14,19 @@ class Photo {
     required this.description,
   });
 
-  // Un "factory constructor". C'est une méthode spéciale qui fabrique un objet de la classe.
-  // Son rôle ici est de servir de "traducteur" depuis le format JSON.
-  // Elle prend une `Map` (qui représente le JSON) et la transforme en un objet `Photo` propre.
+  // Factory constructor pour créer une instance de Photo à partir d'un Map (JSON).
+  // L'équivalent d'un constructeur prenant un DTO ou d'une méthode de fabrique statique en C#.
   factory Photo.fromJson(Map<String, dynamic> json) {
-    // On retourne une nouvelle instance de Photo.
     return Photo(
-      // Pour chaque propriété, on essaie de lire la valeur correspondante dans le JSON.
-      // L'opérateur `??` est une sécurité (null-coalescing).
-      // Il dit : "Essaie de prendre `json['id']`. Si c'est null, alors utilise 'id_inconnu' à la place."
-      // C'est une protection vitale contre les données incomplètes ou malformées d'une API.
-      // Ça évite que l'application ne crash.
-      id: json['id'] ?? 'id_inconnu',
-      auteur: json['auteur'] ?? 'Auteur inconnu',
-      url: json['url'] ?? '',
-      description: json['description'] ?? 'Aucune description.',
+      id: json['id'] as String,
+      auteur: json['user']['name'] as String, // Accès imbriqué pour l'auteur
+      url:
+          json['urls']['regular']
+              as String, // Accès imbriqué pour l'URL de l'image
+      description:
+          json['description'] as String? ??
+          json['alt_description'] as String? ??
+          'Pas de description', // Unsplash peut avoir null
     );
   }
 }
