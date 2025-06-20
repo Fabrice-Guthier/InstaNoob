@@ -10,6 +10,10 @@ import 'package:provider/provider.dart';
 
 // La fonction 'main', c'est le point d'entrée du programme. L'OS lance l'app par ici.
 void main() {
+  // `WidgetsFlutterBinding.ensureInitialized()` est une ligne magique qui prépare Flutter
+  // à démarrer correctement. C'est comme si on disait à Flutter : "Hé, prépare-toi, on va commencer !".
+  // C'est important pour s'assurer que tout est prêt avant de lancer l'application.
+  WidgetsFlutterBinding.ensureInitialized();
   // `runApp` est la fonction qui prend un Widget et le dessine à l'écran.
   runApp(
     // `ChangeNotifierProvider` est un widget spécial qui va "fournir" une instance d'un objet

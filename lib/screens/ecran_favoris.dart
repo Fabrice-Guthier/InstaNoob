@@ -16,40 +16,56 @@ class EcranFavoris extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final appState = context.watch<AppState>();
-    final favorisIds = appState.favoris;
+    return Consumer<AppState>(
+      builder: (context, appState, child) {
+        // Récupère les IDs des photos favorites depuis AppState
+        final Set<String> favorisIds =
+            appState.photosFavoritesIds; // <-- RÉCUPÈRE LES IDS
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Mes Favoris')),
-      body: FutureBuilder<List<Photo>>(
-        future: ApiService().recupererPhotos(), // Récupère toutes les photos
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return Center(child: Text('Erreur: ${snapshot.error}'));
-          }
-          if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('Aucune photo à afficher.'));
-          }
+        return Scaffold(
+          appBar: AppBar(title: const Text('Mes Favoris')),
+          body: FutureBuilder<List<Photo>>(
+            // Récupère TOUTES les photos de l'API à chaque fois
+            future: ApiService().recupererPhotos(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (snapshot.hasError) {
+                return Center(child: Text('Erreur: ${snapshot.error}'));
+              }
+              if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return const Center(
+                  child: Text('Aucune photo à afficher de l\'API.'),
+                );
+              }
 
-          // Filtre les photos pour ne garder que les favoris
-          final favorisPhotos = snapshot.data!
-              .where((photo) => favorisIds.contains(photo.id))
-              .toList();
+              final allPhotosFromApi = snapshot.data!;
 
-          if (favorisPhotos.isEmpty) {
-            return const Center(child: Text('Aucun favori pour le moment.'));
-          }
+              // Filtre les photos pour ne garder que celles dont l'ID est dans nos favoris persistants
+              final List<Photo> favorisPhotos = allPhotosFromApi
+                  .where((photo) => favorisIds.contains(photo.id))
+                  .toList();
 
-          return ListView.builder(
-            itemCount: favorisPhotos.length,
-            itemBuilder: (context, index) =>
-                CartePhoto(photo: favorisPhotos[index]),
-          );
-        },
-      ),
+              if (favorisPhotos.isEmpty) {
+                return const Center(
+                  child: Text(
+                    'Votre collection de trésors favoris est vide pour le moment. Allez liker quelques clichés !',
+                  ),
+                );
+              }
+
+              return ListView.builder(
+                itemCount: favorisPhotos.length,
+                itemBuilder: (context, index) => SizedBox(
+                  height: 800, // Ajuste selon tes besoins
+                  child: CartePhoto(photo: favorisPhotos[index]),
+                ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }

@@ -144,6 +144,7 @@ class GrillePhotos extends StatelessWidget {
     return GridView.builder(
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2, // 2 colonnes
+        childAspectRatio: 0.7, // Ajuste le ratio pour que les cartes soient plus hautes que larges
       ),
       itemCount: photos.length,
       itemBuilder: (context, index) => CartePhoto(photo: photos[index]),

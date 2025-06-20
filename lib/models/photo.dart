@@ -19,14 +19,19 @@ class Photo {
   factory Photo.fromJson(Map<String, dynamic> json) {
     return Photo(
       id: json['id'] as String,
-      auteur: json['user']['name'] as String, // Accès imbriqué pour l'auteur
+      auteur:
+          (json['auteur'] as String?) ??
+          (json['user']?['name'] as String?) ??
+          'Inconnu', // Accès imbriqué pour l'auteur
       url:
-          json['urls']['regular']
-              as String, // Accès imbriqué pour l'URL de l'image
+          (json['url'] as String?) ?? // <-- AJOUTE CETTE LIGNE
+          (json['urls']?['regular']
+              as String?) ?? // Utilise l'opérateur ?. pour accéder à 'regular' en toute sécurité
+          'https://via.placeholder.com/400x600?text=Erreur+Image', // Accès imbriqué pour l'URL de l'image
       description:
-          json['description'] as String? ??
-          json['alt_description'] as String? ??
-          'Pas de description', // Unsplash peut avoir null
+                  json['description'] as String? ??
+                  json['alt_description'] as String? ??
+                  'Pas de description', // Unsplash peut avoir null
     );
   }
 }

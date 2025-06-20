@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:likeit/models/photo.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:likeit/services/photo_like_service.dart';
 
-// La classe AppState hérite de `ChangeNotifier`.
-// C'est ce qui lui donne le super-pouvoir `notifyListeners()`.
-// C'est le pattern Observer : cet objet peut avoir des "observateurs" et les notifier des changements.
-// En C#, c'est très similaire à une classe qui implémente l'interface `INotifyPropertyChanged`.
 class AppState extends ChangeNotifier {
-  // -- Déclaration des États (les variables de notre jeu) --
+  Set<String> _photosFavoritesIds = {}; // Stocke seulement les IDs en mémoire
+  final PhotoLikeService _photoLikeService =
+      PhotoLikeService(); // Instance du service
+
+  // -- Déclaration des États --
 
   // Le `_` au début du nom rend la variable privée au fichier. C'est l'encapsulation.
   // C'est la vraie liste où sont stockées les photos favorites.
-  final List<Photo> _photosFavorites = [];
-  // Getter public pour que les autres classes puissent LIRE la liste, mais pas la modifier directement.
-  // C'est un accès en lecture seule, une excellente pratique.
-  List<Photo> get photosFavorites => _photosFavorites;
+  // On ne stocke plus les objets Photo, mais leurs IDs (String).
+Set<String> get photosFavoritesIds => _photosFavoritesIds;
+
+// Crée une instance de ton PhotoLikeService
 
   // État pour le thème (Clair / Sombre)
   ThemeMode _themeMode = ThemeMode.light;
@@ -24,12 +24,32 @@ class AppState extends ChangeNotifier {
   bool _isGridView = false;
   bool get isGridView => _isGridView;
 
-  // -- Méthodes pour Modifier l'État (les actions du joueur) --
+  // Constructeur : charge les favoris au démarrage
+  AppState() {
+    print(
+      'AppState: Constructeur appelé. Démarrage du chargement des favoris.',
+    );
+    _loadFavoris();
+  }
+
+  // Charge les favoris depuis SharedPreferences
+   Future<void> _loadFavoris() async {
+    _photosFavoritesIds = await _photoLikeService
+        .getLikedPhotoIds(); // Charge les IDs
+    print(
+      'AppState: Favoris chargés depuis SharedPreferences: ${_photosFavoritesIds.length} IDs.',
+    );
+    notifyListeners();
+  }
+
+  // Méthode pour Modifier l'État (les actions du joueur) --
 
   // Méthode pour basculer le thème
   void toggleTheme() {
     // Si le thème est clair, on passe en sombre, sinon on passe en clair.
-    _themeMode = _themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
+    _themeMode = _themeMode == ThemeMode.light
+        ? ThemeMode.dark
+        : ThemeMode.light;
     // LA LIGNE LA PLUS IMPORTANTE : On envoie un signal à tous les widgets qui écoutent !
     // "Hey tout le monde, le thème a changé, mettez-vous à jour !".
     notifyListeners();
@@ -41,38 +61,39 @@ class AppState extends ChangeNotifier {
     notifyListeners(); // On notifie les widgets du changement.
   }
 
-static const String _keyFavoris =
-      'favoris_photos_ids'; // Clé pour shared_preferences
-  Set<String> _favoris = {}; // Ensemble des IDs des photos favorites
-
-  Set<String> get favoris => _favoris;
-
-  AppState() {
-    _loadFavoris(); // Charge les favoris au démarrage
+  // Méthode pour VÉRIFIER si une photo est déjà en favori.
+  // C'est une méthode de "lecture" (query), elle ne modifie rien.
+  bool estFavori(Photo photo) {
+    // On vérifie si l'ID de la photo est dans la liste des IDs favoris.
+    return _photosFavoritesIds.contains(photo.id);
   }
 
-  // Charge les favoris depuis shared_preferences
-  Future<void> _loadFavoris() async {
-    final prefs = await SharedPreferences.getInstance();
-    _favoris = prefs.getStringList(_keyFavoris)?.toSet() ?? {};
-    notifyListeners(); // Informe les widgets de l'état initial
-  }
-
-  // Bascule l'état favori d'une photo
+  // Méthode pour AJOUTER ou RETIRER une photo des favoris.
   Future<void> toggleFavori(Photo photo) async {
-    final prefs = await SharedPreferences.getInstance();
-    if (_favoris.contains(photo.id)) {
-      _favoris.remove(photo.id);
+    print('AppState: toggleFavori appelé pour photo.id: ${photo.id}');
+    if (estFavori(photo)) {
+      await _photoLikeService.removeLikedPhotoId(
+        photo.id,
+      ); // Retire l'ID via le service
     } else {
-      _favoris.add(photo.id);
+      await _photoLikeService.addLikedPhotoId(
+        photo.id,
+      ); // Ajoute l'ID via le service
     }
-    await prefs.setStringList(_keyFavoris, _favoris.toList()); // Sauvegarde
+    // Après la modification et la sauvegarde par le service, on rafraîchit notre copie en mémoire
+    _photosFavoritesIds = await _photoLikeService.getLikedPhotoIds();
+
+    print(
+      'AppState: Sauvegarde et recharge terminées. Appelle notifyListeners().',
+    );
     notifyListeners(); // Informe les widgets du changement
   }
 
-  // Vérifie si une photo est favorite
-  bool estFavori(Photo photo) {
-    return _favoris.contains(photo.id);
+  // Optionnel: Réinitialise tous les favoris
+  Future<void> clearAllFavoris() async {
+    await _photoLikeService.clearAllLikedPhotoIds();
+    _photosFavoritesIds = {}; // Vide la liste en mémoire
+    notifyListeners();
   }
 }
 
