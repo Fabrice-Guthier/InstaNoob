@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:likeit/models/photo.dart';
 import 'package:likeit/providers/app_state.dart';
-import 'package:likeit/services/app_service.dart';
+import 'package:likeit/services/photo_service.dart';
 import 'package:provider/provider.dart';
 // Importe une bibliothèque externe pour gérer le cache des images. C'est un "mod" très utile.
 import 'package:cached_network_image/cached_network_image.dart';

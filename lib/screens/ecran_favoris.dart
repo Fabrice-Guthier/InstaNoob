@@ -4,7 +4,7 @@ import 'package:likeit/providers/app_state.dart';
 // On importe EcranMaster UNIQUEMENT pour pouvoir réutiliser le widget 'ListePhotos' qui s'y trouve.
 // C'est une dépendance directe, ce qui montre à quel point les composants sont bien couplés.
 import 'package:likeit/screens/ecran_master.dart';
-import 'package:likeit/services/app_service.dart';
+import 'package:likeit/services/photo_service.dart';
 import 'package:provider/provider.dart';
 
 // L'écran des favoris est un 'StatelessWidget'.

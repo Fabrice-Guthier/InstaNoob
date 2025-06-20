@@ -1,16 +1,16 @@
 // Pour les requêtes HTTP, on a besoin d'un bon vieux 'http' package.
 // C'est notre client REST, prêt à envoyer des requêtes comme un guerrier en quête de loot.
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert'; // Pour décoder le JSON, parce que les données d'API, c'est souvent ça.
-
 // Importe le modèle de données 'Photo'. On va mapper les données Unsplash là-dessus.
 import 'package:likeit/models/photo.dart';
 
-// Constante pour notre clé d'API Unsplash.
-const String unsplashAccessKey =
-    '4WCnYuEhE8CttpLHbB0ADdMWGHBla3PlITvUwTZFDm0';
-
 class ApiService {
+  final String _unsplashAccessKey;
+
+  ApiService() : _unsplashAccessKey = dotenv.env['UNSPLASH_KEY'] ?? '';
+
   // Méthode asynchrone pour récupérer les photos d'Unsplash.
   Future<List<Photo>> recupererPhotos() async {
     // L'URL de l'API Unsplash pour récupérer une liste de photos.
@@ -23,7 +23,7 @@ class ApiService {
         uri,
         headers: {
           // L'authentification
-          'Authorization': 'Client-ID $unsplashAccessKey',
+          'Authorization': 'Client-ID $_unsplashAccessKey',
         },
       );
 
